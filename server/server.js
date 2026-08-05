@@ -7,11 +7,15 @@ import categoryRoutes from "./routes/category.routes.js";
 import foodRoutes from "./routes/food.routes.js";
 import cartRoutes from "./routes/cart.routes.js";
 import orderRoutes from "./routes/order.routes.js";
+import cors from "cors"
 
 dotenv.config();
 connectDB();
 
 const app = express();
+app.use(express.json());
+
+app.use(cors());
 app.use(express.json());
 
 app.get("/", (req, res) => res.send("API running"));
