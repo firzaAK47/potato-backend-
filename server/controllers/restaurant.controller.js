@@ -1,5 +1,5 @@
 import Restaurant from "../models/Restaurant.model.js";
-
+import { uploadToCloudinary } from "../utils/uploadToCloudinary.js";
 // @route  GET /api/restaurants
 export const getRestaurants = async (req, res) => {
   try {
@@ -32,10 +32,17 @@ export const createRestaurant = async (req, res) => {
       return res.status(400).json({ success: false, message: "Name and address are required" });
     }
 
+    let imageUrl = "";
+    if (req.file) {
+      const result = await uploadToCloudinary(req.file.buffer);
+      imageUrl = result.secure_url;
+    }
+
     const restaurant = await Restaurant.create({
       name,
       description,
       address,
+      image: imageUrl,
       owner: req.user._id,
     });
 
@@ -48,7 +55,14 @@ export const createRestaurant = async (req, res) => {
 // @route  PUT /api/restaurants/:id  [admin only]
 export const updateRestaurant = async (req, res) => {
   try {
-    const restaurant = await Restaurant.findByIdAndUpdate(req.params.id, req.body, {
+    const updateData = { ...req.body };
+
+    if (req.file) {
+      const result = await uploadToCloudinary(req.file.buffer);
+      updateData.image = result.secure_url;
+    }
+
+    const restaurant = await Restaurant.findByIdAndUpdate(req.params.id, updateData, {
       new: true,
       runValidators: true,
     });
