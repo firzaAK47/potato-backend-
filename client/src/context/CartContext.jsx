@@ -41,7 +41,9 @@ export const CartProvider = ({ children }) => {
     setCart(data.cart);
   };
 
-  const cartCount = cart.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
+  // const cartCount = cart.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
+
+  const cartCount = cart.items?.filter((item) => item.food).reduce((sum, item) => sum + item.quantity, 0) || 0;
 
   return (
     <CartContext.Provider

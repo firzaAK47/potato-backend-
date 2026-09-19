@@ -32,13 +32,20 @@ function Navbar() {
             Orders
           </Link>
           <span className="text-sm text-gray-400">|</span>
-          <span className="text-sm text-gray-600 hidden sm:inline">Hi, {user?.name}</span>
+          <span className="text-sm text-gray-600 hidden sm:inline">
+            Hi, {user?.name}
+          </span>
           <button
             onClick={logout}
             className="text-sm bg-red-500 text-white px-3 py-1.5 rounded-lg hover:bg-red-600 transition"
           >
             Logout
           </button>
+          {user?.role === "admin" && (
+            <Link to="/admin" className={linkClass("/admin")}>
+              Admin
+            </Link>
+          )}
         </div>
       </div>
     </div>

@@ -7,7 +7,7 @@ import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import MyOrders from "./pages/MyOrders";
 import ProtectedRoute from "./components/ProtectedRoute";
-
+import AdminDashboard from "./pages/AdminDashboard";
 function App() {
   return (
     <Routes>
@@ -27,7 +27,7 @@ function App() {
           </ProtectedRoute>
         }
       />
-       <Route
+      <Route
         path="/cart"
         element={
           <ProtectedRoute>
@@ -35,8 +35,30 @@ function App() {
           </ProtectedRoute>
         }
       />
-       <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
-        <Route path="/orders" element={<ProtectedRoute><MyOrders /></ProtectedRoute>} />
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute>
+            <AdminDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/checkout"
+        element={
+          <ProtectedRoute>
+            <Checkout />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/orders"
+        element={
+          <ProtectedRoute>
+            <MyOrders />
+          </ProtectedRoute>
+        }
+      />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
     </Routes>

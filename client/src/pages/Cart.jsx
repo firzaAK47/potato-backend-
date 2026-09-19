@@ -8,7 +8,8 @@ function Cart() {
   const [updatingId, setUpdatingId] = useState(null);
   const navigate = useNavigate();
 
-  const items = cart.items || [];
+  // Filter out any cart items whose food no longer exists (deleted from menu)
+  const items = (cart.items || []).filter((item) => item.food);
 
   const total = items.reduce(
     (sum, item) => sum + item.food.price * item.quantity,
@@ -36,7 +37,7 @@ function Cart() {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <Navbar/>
+      <Navbar />
       <div className="bg-white shadow-sm p-4">
         <Link to="/" className="text-orange-600 text-sm font-medium">
           ← Back to Restaurants

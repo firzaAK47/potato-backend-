@@ -52,7 +52,8 @@ function RestaurantDetail() {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <Navbar/>
+      <Navbar />
+
       <div className="bg-white shadow-sm p-4">
         <Link to="/" className="text-orange-600 text-sm font-medium">
           ← Back to Restaurants
@@ -75,20 +76,42 @@ function RestaurantDetail() {
             {foods.map((food) => (
               <div
                 key={food._id}
-                className="bg-white rounded-xl shadow-sm p-4 flex justify-between items-center"
+                className="bg-white rounded-xl shadow-sm p-4 flex gap-4"
               >
-                <div>
-                  <h3 className="font-semibold text-gray-800">{food.name}</h3>
-                  <p className="text-sm text-gray-500">{food.description}</p>
-                  <p className="text-orange-600 font-semibold mt-1">₹{food.price}</p>
+                {food.image ? (
+                  <img
+                    src={food.image}
+                    alt={food.name}
+                    className="w-24 h-24 object-cover rounded-lg flex-shrink-0"
+                  />
+                ) : (
+                  <div className="w-24 h-24 bg-gray-200 rounded-lg flex-shrink-0 flex items-center justify-center text-xs text-gray-400">
+                    No Image
+                  </div>
+                )}
+
+                <div className="flex-1 flex flex-col justify-between">
+                  <div>
+                    <h3 className="font-semibold text-gray-800">{food.name}</h3>
+                    <p className="text-sm text-gray-500">{food.description}</p>
+                    {food.ingredients?.length > 0 && (
+                      <p className="text-xs text-gray-400 mt-1">
+                        {food.ingredients.join(" · ")}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="flex justify-between items-center mt-2">
+                    <p className="text-orange-600 font-semibold">₹{food.price}</p>
+                    <button
+                      onClick={() => handleAddToCart(food._id)}
+                      disabled={addingId === food._id}
+                      className="bg-orange-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-orange-700 transition disabled:opacity-50"
+                    >
+                      {addingId === food._id ? "Adding..." : "Add"}
+                    </button>
+                  </div>
                 </div>
-                <button
-                  onClick={() => handleAddToCart(food._id)}
-                  disabled={addingId === food._id}
-                  className="bg-orange-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-orange-700 transition disabled:opacity-50"
-                >
-                  {addingId === food._id ? "Adding..." : "Add"}
-                </button>
               </div>
             ))}
           </div>
