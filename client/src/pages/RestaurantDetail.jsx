@@ -4,6 +4,7 @@ import { getRestaurantById } from "../services/restaurantService";
 import { getFoodsByRestaurant } from "../services/foodService";
 import { useCart } from "../hooks/useCart";
 import Navbar from "../components/Navbar";
+import { motion } from "framer-motion";
 
 function RestaurantDetail() {
   const { id } = useParams();
@@ -73,9 +74,12 @@ function RestaurantDetail() {
           <p className="text-gray-500">No food items available yet.</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {foods.map((food) => (
-              <div
+            {foods.map((food, index) => (
+              <motion.div
                 key={food._id}
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
                 className="bg-white rounded-xl shadow-sm p-4 flex gap-4"
               >
                 {food.image ? (
@@ -103,16 +107,17 @@ function RestaurantDetail() {
 
                   <div className="flex justify-between items-center mt-2">
                     <p className="text-orange-600 font-semibold">₹{food.price}</p>
-                    <button
+                    <motion.button
+                      whileTap={{ scale: 0.9 }}
                       onClick={() => handleAddToCart(food._id)}
                       disabled={addingId === food._id}
                       className="bg-orange-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-orange-700 transition disabled:opacity-50"
                     >
                       {addingId === food._id ? "Adding..." : "Add"}
-                    </button>
+                    </motion.button>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         )}

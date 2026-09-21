@@ -1,6 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useCart } from "../hooks/useCart";
+import { motion, AnimatePresence } from "framer-motion";
 
 function Navbar() {
   const { user, logout } = useAuth();
@@ -26,7 +27,19 @@ function Navbar() {
             Home
           </Link>
           <Link to="/cart" className={linkClass("/cart")}>
-            Cart{cartCount > 0 ? ` (${cartCount})` : ""}
+            Cart
+            <AnimatePresence>
+              {cartCount > 0 && (
+                <motion.span
+                  key={cartCount}
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="ml-1 inline-block"
+                >
+                  ({cartCount})
+                </motion.span>
+              )}
+            </AnimatePresence>
           </Link>
           <Link to="/orders" className={linkClass("/orders")}>
             Orders
