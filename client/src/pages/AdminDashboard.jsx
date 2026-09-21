@@ -6,7 +6,7 @@ import {
 } from "../services/restaurantService";
 import Navbar from "../components/Navbar";
 import { useAuth } from "../hooks/useAuth";
-import { createFood, deleteFood } from "../services/foodService";
+import { createFood, deleteFood, getAllFoods } from "../services/foodService";
 import { getCategories } from "../services/categoryService";
 
 function AdminDashboard() {
@@ -21,14 +21,24 @@ function AdminDashboard() {
   const [error, setError] = useState("");
   const [restaurants, setRestaurants] = useState([]);
   const [categories, setCategories] = useState([]);
-const [foodName, setFoodName] = useState("");
-const [foodDesc, setFoodDesc] = useState("");
-const [foodPrice, setFoodPrice] = useState("");
-const [foodRestaurant, setFoodRestaurant] = useState("");
-const [foodCategory, setFoodCategory] = useState("");
-const [foodImage, setFoodImage] = useState(null);
-const [foodLoading, setFoodLoading] = useState(false);
-const [foodMessage, setFoodMessage] = useState("");
+  const [foodName, setFoodName] = useState("");
+  const [foodDesc, setFoodDesc] = useState("");
+  const [foodPrice, setFoodPrice] = useState("");
+  const [foodRestaurant, setFoodRestaurant] = useState("");
+  const [foodCategory, setFoodCategory] = useState("");
+  const [foodImage, setFoodImage] = useState(null);
+  const [foodLoading, setFoodLoading] = useState(false);
+  const [foodMessage, setFoodMessage] = useState("");
+  const [foods, setFoods] = useState([]);
+
+  const fetchFoods = async () => {
+    try {
+      const data = await getAllFoods();
+      setFoods(data.foods);
+    } catch (err) {
+      console.error("Failed to fetch foods:", err);
+    }
+  };
 
   const fetchRestaurants = async () => {
     try {
@@ -40,17 +50,18 @@ const [foodMessage, setFoodMessage] = useState("");
   };
 
   const fetchCategories = async () => {
-  try {
-    const data = await getCategories();
-    setCategories(data.categories);
-  } catch (err) {
-    console.error("Failed to fetch categories:", err);
-  }
-};
+    try {
+      const data = await getCategories();
+      setCategories(data.categories);
+    } catch (err) {
+      console.error("Failed to fetch categories:", err);
+    }
+  };
 
   useEffect(() => {
     fetchRestaurants();
     fetchCategories();
+    fetchFoods();
   }, []);
 
   const handleDelete = async (id) => {
@@ -60,6 +71,16 @@ const [foodMessage, setFoodMessage] = useState("");
       fetchRestaurants();
     } catch (err) {
       console.error("Failed to delete:", err);
+    }
+  };
+
+  const handleFoodDelete = async (id) => {
+    if (!window.confirm("Delete this food item?")) return;
+    try {
+      await deleteFood(id);
+      fetchFoods();
+    } catch (err) {
+      console.error("Failed to delete food:", err);
     }
   };
 
@@ -104,33 +125,34 @@ const [foodMessage, setFoodMessage] = useState("");
   };
 
   const handleFoodSubmit = async (e) => {
-  e.preventDefault();
-  setFoodMessage("");
-  setFoodLoading(true);
+    e.preventDefault();
+    setFoodMessage("");
+    setFoodLoading(true);
 
-  try {
-    const formData = new FormData();
-    formData.append("name", foodName);
-    formData.append("description", foodDesc);
-    formData.append("price", foodPrice);
-    formData.append("restaurant", foodRestaurant);
-    formData.append("category", foodCategory);
-    if (foodImage) formData.append("image", foodImage);
+    try {
+      const formData = new FormData();
+      formData.append("name", foodName);
+      formData.append("description", foodDesc);
+      formData.append("price", foodPrice);
+      formData.append("restaurant", foodRestaurant);
+      formData.append("category", foodCategory);
+      if (foodImage) formData.append("image", foodImage);
 
-    await createFood(formData);
+      await createFood(formData);
 
-    setFoodMessage("Food item added successfully!");
-    setFoodName("");
-    setFoodDesc("");
-    setFoodPrice("");
-    setFoodImage(null);
-    e.target.reset();
-  } catch (err) {
-    setFoodMessage(err.response?.data?.message || "Failed to add food item.");
-  } finally {
-    setFoodLoading(false);
-  }
-};
+      setFoodMessage("Food item added successfully!");
+      fetchFoods();
+      setFoodName("");
+      setFoodDesc("");
+      setFoodPrice("");
+      setFoodImage(null);
+      e.target.reset();
+    } catch (err) {
+      setFoodMessage(err.response?.data?.message || "Failed to add food item.");
+    } finally {
+      setFoodLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -222,10 +244,15 @@ const [foodMessage, setFoodMessage] = useState("");
 
         {/* Restaurant List */}
         <div className="bg-white rounded-xl shadow-sm p-6 mt-6">
-          <h2 className="font-semibold text-gray-800 mb-4">Manage Restaurants</h2>
+          <h2 className="font-semibold text-gray-800 mb-4">
+            Manage Restaurants
+          </h2>
           <div className="space-y-2">
             {restaurants.map((r) => (
-              <div key={r._id} className="flex justify-between items-center border-b py-2">
+              <div
+                key={r._id}
+                className="flex justify-between items-center border-b py-2"
+              >
                 <div>
                   <p className="font-medium text-gray-800">{r.name}</p>
                   <p className="text-xs text-gray-500">{r.address}</p>
@@ -240,7 +267,8 @@ const [foodMessage, setFoodMessage] = useState("");
             ))}
           </div>
         </div>
-                {/* Add Food Item */}
+
+        {/* Add Food Item */}
         <div className="bg-white rounded-xl shadow-sm p-6 mt-6">
           <h2 className="font-semibold text-gray-800 mb-4">Add Food Item</h2>
 
@@ -283,7 +311,9 @@ const [foodMessage, setFoodMessage] = useState("");
             >
               <option value="">Select Restaurant</option>
               {restaurants.map((r) => (
-                <option key={r._id} value={r._id}>{r.name}</option>
+                <option key={r._id} value={r._id}>
+                  {r.name}
+                </option>
               ))}
             </select>
 
@@ -295,7 +325,9 @@ const [foodMessage, setFoodMessage] = useState("");
             >
               <option value="">Select Category</option>
               {categories.map((c) => (
-                <option key={c._id} value={c._id}>{c.name}</option>
+                <option key={c._id} value={c._id}>
+                  {c.name}
+                </option>
               ))}
             </select>
 
@@ -314,6 +346,30 @@ const [foodMessage, setFoodMessage] = useState("");
               {foodLoading ? "Adding..." : "Add Food Item"}
             </button>
           </form>
+        </div>
+
+        {/* Food List */}
+        <div className="bg-white rounded-xl shadow-sm p-6 mt-6">
+          <h2 className="font-semibold text-gray-800 mb-4">Manage Food Items</h2>
+          <div className="space-y-2">
+            {foods.map((f) => (
+              <div
+                key={f._id}
+                className="flex justify-between items-center border-b py-2"
+              >
+                <div>
+                  <p className="font-medium text-gray-800">{f.name}</p>
+                  <p className="text-xs text-gray-500">₹{f.price}</p>
+                </div>
+                <button
+                  onClick={() => handleFoodDelete(f._id)}
+                  className="text-red-500 text-sm hover:text-red-700"
+                >
+                  Delete
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
