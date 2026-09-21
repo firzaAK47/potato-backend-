@@ -3,6 +3,7 @@ import {
   createRestaurant,
   getRestaurants,
   deleteRestaurant,
+  updateRestaurant,
 } from "../services/restaurantService";
 import Navbar from "../components/Navbar";
 import { useAuth } from "../hooks/useAuth";
@@ -20,6 +21,7 @@ function AdminDashboard() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [restaurants, setRestaurants] = useState([]);
+  const [editingId, setEditingId] = useState(null);
   const [categories, setCategories] = useState([]);
   const [foodName, setFoodName] = useState("");
   const [foodDesc, setFoodDesc] = useState("");
@@ -84,6 +86,22 @@ function AdminDashboard() {
     }
   };
 
+  const handleEditClick = (restaurant) => {
+    setEditingId(restaurant._id);
+    setName(restaurant.name);
+    setDescription(restaurant.description);
+    setAddress(restaurant.address);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setName("");
+    setDescription("");
+    setAddress("");
+    setImage(null);
+  };
+
   if (user?.role !== "admin") {
     return (
       <div className="min-h-screen bg-gray-100">
@@ -108,9 +126,15 @@ function AdminDashboard() {
       formData.append("address", address);
       if (image) formData.append("image", image);
 
-      await createRestaurant(formData);
+      if (editingId) {
+        await updateRestaurant(editingId, formData);
+        setMessage("Restaurant updated successfully!");
+        setEditingId(null);
+      } else {
+        await createRestaurant(formData);
+        setMessage("Restaurant added successfully!");
+      }
 
-      setMessage("Restaurant added successfully!");
       fetchRestaurants();
       setName("");
       setDescription("");
@@ -118,7 +142,7 @@ function AdminDashboard() {
       setImage(null);
       e.target.reset();
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to add restaurant.");
+      setError(err.response?.data?.message || "Failed to save restaurant.");
     } finally {
       setLoading(false);
     }
@@ -164,7 +188,7 @@ function AdminDashboard() {
 
         <div className="bg-white rounded-xl shadow-sm p-6">
           <h2 className="font-semibold text-gray-800 mb-4">
-            Add New Restaurant
+            {editingId ? "Edit Restaurant" : "Add New Restaurant"}
           </h2>
 
           {message && (
@@ -222,7 +246,7 @@ function AdminDashboard() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Restaurant Image
+                Restaurant Image {editingId && <span className="text-gray-400 font-normal">(leave empty to keep current)</span>}
               </label>
               <input
                 type="file"
@@ -232,13 +256,24 @@ function AdminDashboard() {
               />
             </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-orange-600 text-white py-2 rounded-lg font-medium hover:bg-orange-700 transition disabled:opacity-50"
-            >
-              {loading ? "Adding..." : "Add Restaurant"}
-            </button>
+            <div className="flex gap-3">
+              <button
+                type="submit"
+                disabled={loading}
+                className="flex-1 bg-orange-600 text-white py-2 rounded-lg font-medium hover:bg-orange-700 transition disabled:opacity-50"
+              >
+                {loading ? "Saving..." : editingId ? "Update Restaurant" : "Add Restaurant"}
+              </button>
+              {editingId && (
+                <button
+                  type="button"
+                  onClick={handleCancelEdit}
+                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 transition"
+                >
+                  Cancel
+                </button>
+              )}
+            </div>
           </form>
         </div>
 
@@ -257,12 +292,20 @@ function AdminDashboard() {
                   <p className="font-medium text-gray-800">{r.name}</p>
                   <p className="text-xs text-gray-500">{r.address}</p>
                 </div>
-                <button
-                  onClick={() => handleDelete(r._id)}
-                  className="text-red-500 text-sm hover:text-red-700"
-                >
-                  Delete
-                </button>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => handleEditClick(r)}
+                    className="text-blue-500 text-sm hover:text-blue-700"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(r._id)}
+                    className="text-red-500 text-sm hover:text-red-700"
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
             ))}
           </div>
